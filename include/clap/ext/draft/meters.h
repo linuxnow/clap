@@ -37,6 +37,20 @@ enum clap_meter_kind {
    // Note: more entries could be added here in the future
 };
 
+enum clap_meter_flags {
+   // A promise by the plugin: all the values one get_values() call returns come from the same
+   // processed block. Without this flag each value is read on its own and two channels may
+   // come from neighbouring blocks, which is fine for level bars but not for a value derived
+   // from several channels, such as a correlation or a balance.
+   //
+   // To keep the promise without blocking either thread, the plugin keeps a ring buffer of N
+   // copies of the meter's value array and an atomic index of the last complete one: after each
+   // block the audio thread fills the next copy and then stores its index; get_values() loads
+   // the index and copies that array. N must be large enough that the audio thread cannot wrap
+   // around to the copy a reader is still reading.
+   CLAP_METER_IS_COHERENT = 1 << 0,
+};
+
 typedef struct clap_meter_info {
    // Stable meter identifier, it must never change.
    clap_id id;
@@ -46,6 +60,9 @@ typedef struct clap_meter_info {
 
    // see enum clap_meter_kind
    uint32_t kind;
+
+   // bitmask of clap_meter_flags
+   uint32_t flags;
 
    // Number of values the meter has, eg: 1 for a linked gain reduction, 2 for a stereo level.
    uint32_t channel_count;
@@ -72,6 +89,14 @@ typedef struct clap_plugin_meters {
    // The values are the ones the plugin would show on its own meters for the most recently
    // processed block, ballistics included. Reading them must not change them: several readers
    // may poll the same meter.
+   //
+   // Unless the meter has CLAP_METER_IS_COHERENT, the values of one call may come from
+   // different blocks: each is read on its own, and a stereo pair can be one block apart.
+   // A plugin that needs its channels together publishes them as one block and sets the flag;
+   // the host never synchronises, it only copies.
+   //
+   // After processing stops the plugin keeps returning the last values it computed, until
+   // deactivate(); after activation and before the first process() it returns 0.
    //
    // Returns 0 if meter_id is unknown, or if the plugin is not active or has not processed
    // any block since it was activated.
