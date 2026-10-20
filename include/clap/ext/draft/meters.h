@@ -44,10 +44,12 @@ enum clap_meter_flags {
    // from several channels, such as a correlation or a balance.
    //
    // To keep the promise without blocking either thread, the plugin keeps a ring buffer of N
-   // copies of the meter's value array and an atomic index of the last complete one: after each
-   // block the audio thread fills the next copy and then stores its index; get_values() loads
-   // the index and copies that array. N must be large enough that the audio thread cannot wrap
-   // around to the copy a reader is still reading.
+   // copies of the meter's value array (three are enough) and an atomic index of the last
+   // complete one: after each block the audio thread fills the next copy and then stores its
+   // index. get_values() loads the index, copies that array, then loads the index again, and
+   // keeps the copy only if the index advanced at most once; otherwise it retries a few times
+   // and returns 0 if it never gets a clean copy. Without the second load, a reader that is
+   // preempted during the copy can read a slot the audio thread is refilling.
    CLAP_METER_IS_COHERENT = 1 << 0,
 };
 
