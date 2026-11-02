@@ -1,3 +1,7 @@
+# Changes in 1.2.11
+
+* [audio-ports-sidechain.h](include/clap/ext/draft/audio-ports-sidechain.h): new draft extension to let the plugin tell the host which audio inputs are side chain (key) inputs, and which input each one keys.
+
 # Changes in 1.2.10
 
 * [param-hovered.h](include/clap/ext/draft/param-hovered.h): new extension to tell the host when a parameter is mouse hovered within the plugin's GUI.

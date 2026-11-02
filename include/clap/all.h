@@ -5,6 +5,7 @@
 #include "factory/draft/plugin-invalidation.h"
 #include "factory/draft/plugin-state-converter.h"
 
+#include "ext/draft/audio-ports-sidechain.h"
 #include "ext/draft/background-activation.h"
 #include "ext/draft/background-progress.h"
 #include "ext/draft/background-state-context.h"
