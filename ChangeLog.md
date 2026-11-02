@@ -1,3 +1,7 @@
+# Changes in 1.2.11
+
+* [string-params.h](include/clap/ext/draft/string-params.h): new draft extension to let the plugin expose string values, such as the path of a sample or an impulse response, which the host can read and set without the plugin's GUI.
+
 # Changes in 1.2.10
 
 * [param-hovered.h](include/clap/ext/draft/param-hovered.h): new extension to tell the host when a parameter is mouse hovered within the plugin's GUI.
